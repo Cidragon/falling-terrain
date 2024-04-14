@@ -1,0 +1,75 @@
+[gd_scene load_steps=8 format=3 uid="uid://ckxnp0lx00x1t"]
+
+[ext_resource type="Script" path="res://scenes/main/main.gd" id="1_7h850"]
+[ext_resource type="Texture2D" uid="uid://cejsua1g1jah7" path="res://assets/sand.png" id="2_sv60b"]
+[ext_resource type="Script" path="res://scenes/main/Label.gd" id="3_1mqc7"]
+[ext_resource type="Script" path="res://scenes/main/particles.gd" id="4_13coe"]
+[ext_resource type="Script" path="res://scenes/main/mouse_range.gd" id="5_dgahv"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_qwv2o"]
+texture = ExtResource("2_sv60b")
+texture_region_size = Vector2i(4, 4)
+0:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_wkjos"]
+tile_size = Vector2i(4, 4)
+sources/0 = SubResource("TileSetAtlasSource_qwv2o")
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_7h850")
+
+[node name="tiles" type="TileMap" parent="."]
+unique_name_in_owner = true
+tile_set = SubResource("TileSet_wkjos")
+format = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="fps" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+script = ExtResource("3_1mqc7")
+
+[node name="particles" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Particles amount: 0"
+script = ExtResource("4_13coe")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 1400.0
+offset_right = 1600.0
+offset_bottom = 400.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+
+[node name="mouse_range" type="HBoxContainer" parent="Control"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("5_dgahv")
+
+[node name="Label" type="Label" parent="Control/mouse_range"]
+layout_mode = 2
+text = "square size"
+
+[node name="decrease" type="Button" parent="Control/mouse_range"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+text = "-"
+
+[node name="range" type="Label" parent="Control/mouse_range"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "1"
+
+[node name="increase" type="Button" parent="Control/mouse_range"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+text = "+"
+
+[connection signal="button_up" from="Control/mouse_range/decrease" to="Control/mouse_range" method="_on_decrease_button_up"]
+[connection signal="button_up" from="Control/mouse_range/increase" to="Control/mouse_range" method="_on_increase_button_up"]
