@@ -15,10 +15,12 @@ var grid = []
 var frame_counter : int = 0
 
 
-
+var mouse_range : int = 1
+var is_mouse_pressed : bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	Signals.set_mouse_range.connect(set_mouse_range)
 	grid = createGrid(400,200)
 	
 	pass # Replace with function body.
@@ -36,18 +38,16 @@ func _process(delta: float) -> void:
 	#if Input.is_action_pressed("left_click"):
 	#	insert_tiles_into_world(5)
 	
+	if is_mouse_pressed:
+		insert_tiles_into_world(mouse_range)
 	pass
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if Input.is_action_pressed("left_click"):
-		insert_tiles_into_world(5)
-		#var mouse_position = get_global_mouse_position()
-		#var grid_position = Vector2i(mouse_position) / tile_size
-		#
-		#if grid[grid_position.y][grid_position.x] == GRID_STATE.EMPTY:
-		#	grid[grid_position.y][grid_position.x] = GRID_STATE.SAND
-		#	tiles.set_cell(0, grid_position, 0, Vector2i(0,0))
-		#	print(grid_position)
+		is_mouse_pressed = true
+	elif Input.is_action_just_released("left_click"):
+		is_mouse_pressed = false
+
 	pass
 
 func createGrid(cols, rows) -> Array:
@@ -98,6 +98,7 @@ func calculate_next_iteration() -> void:
 					grid[row+1][col+1] = GRID_STATE.SAND
 					tiles.set_cell(0, Vector2(col+1,row+1), 0, Vector2(0,0))
 	#grid = next_frame_grid
+	
 func insert_tiles_into_world(square_size : int) -> void:
 	var mouse_position = get_global_mouse_position()
 	var grid_position = Vector2i(mouse_position) / tile_size
@@ -106,3 +107,6 @@ func insert_tiles_into_world(square_size : int) -> void:
 		for x in range(square_size):
 			particles.counter += 1
 			grid[grid_position.y + y][grid_position.x + x] = GRID_STATE.SAND
+
+func set_mouse_range(new_mouse_range : int ) -> void:
+	mouse_range = new_mouse_range
