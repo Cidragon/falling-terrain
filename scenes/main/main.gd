@@ -29,14 +29,7 @@ func _ready() -> void:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 
 func _process(delta: float) -> void:
-	frame_counter += 1
 	calculate_next_iteration()
-	#if frame_counter / 2 == 0:
-	#	calculate_next_iteration()
-	#	frame_counter = 0
-	
-	#if Input.is_action_pressed("left_click"):
-	#	insert_tiles_into_world(5)
 	
 	if is_mouse_pressed:
 		insert_tiles_into_world(mouse_range)
@@ -60,51 +53,71 @@ func createGrid(cols, rows) -> Array:
 	
 	return output
 
-func calculate_next_iteration() -> void:
-	#var next_frame_grid = createGrid(grid.size(), grid[0].size())
-	for row in range(grid.size()-1,-1,-1):
-		#print(row)
-		for col in range(grid[0].size()):
-			if grid[row][col] == GRID_STATE.SAND and row + 1 <= grid.size() - 1:
-				#print("tile is sand: ", Vector2(col,row))
-				if grid[row+1][col] == GRID_STATE.EMPTY:
-					#print("sand falling")
-					grid[row][col] = GRID_STATE.EMPTY
-					tiles.erase_cell(0, Vector2(col,row))
-					grid[row+1][col] = GRID_STATE.SAND
-					tiles.set_cell(0, Vector2(col,row+1), 0, Vector2(0,0))
-				#elif (col-1 >= 0 and grid[row+1][col-1] == GRID_STATE.EMPTY) and (col+1 <= grid[0].size()-1 and grid[row+1][col+1] == GRID_STATE.EMPTY):
-				#	var rng = RandomNumberGenerator.new()
-				#	rng.randomize()
-				#	var direction = rng.randi_range(0,1)
-				#	if direction == 0: #left
-				#		grid[row][col] = GRID_STATE.EMPTY
-				#		tiles.erase_cell(0, Vector2(col,row))
-				#		grid[row+1][col-1] = GRID_STATE.SAND
-				#		tiles.set_cell(0, Vector2(col-1,row+1), 0, Vector2(0,0))
-				#	else: #right
-				#		grid[row][col] = GRID_STATE.EMPTY
-				#		tiles.erase_cell(0, Vector2(col,row))
-				#		grid[row+1][col+1] = GRID_STATE.SAND
-				#		tiles.set_cell(0, Vector2(col+1,row+1), 0, Vector2(0,0))
-				elif col-1 >= 0 and grid[row+1][col-1] == GRID_STATE.EMPTY:
-					grid[row][col] = GRID_STATE.EMPTY
-					tiles.erase_cell(0, Vector2(col,row))
-					grid[row+1][col-1] = GRID_STATE.SAND
-					tiles.set_cell(0, Vector2(col-1,row+1), 0, Vector2(0,0))
-				elif col+1 <= grid[0].size()-1 and grid[row+1][col+1] == GRID_STATE.EMPTY:
-					grid[row][col] = GRID_STATE.EMPTY
-					tiles.erase_cell(0, Vector2(col,row))
-					grid[row+1][col+1] = GRID_STATE.SAND
-					tiles.set_cell(0, Vector2(col+1,row+1), 0, Vector2(0,0))
-	#grid = next_frame_grid
+func copy_previous_grid() -> Array:
+	var next_frame_grid : Array = []
+	for row in grid.size():
+		next_frame_grid.append([])
+		for col in grid[0].size():
+			next_frame_grid[row].append(grid[row][col])
 	
+	return next_frame_grid
+
+func calculate_next_iteration() -> void:
+	tiles.clear()
+	var next_frame_grid = createGrid(grid[0].size(), grid.size())
+	#print(Vector2(next_frame_grid[0].size(), next_frame_grid.size()))
+	for row in range(grid.size()-1,-1,-1):
+		for col in range(grid[row].size()):
+			if grid[row][col] != GRID_STATE.EMPTY:
+				
+				if row + 1 > grid.size() - 1:
+					next_frame_grid[row][col] = 1
+					tiles.set_cell(0, Vector2(col,row), 0, Vector2(0,0))
+					continue
+				
+				if grid[row+1][col] == GRID_STATE.EMPTY:
+					#grid[row][col] = GRID_STATE.EMPTY
+					#grid[row+1][col] = GRID_STATE.SAND
+					next_frame_grid[row+1][col] = GRID_STATE.SAND
+					tiles.set_cell(0, Vector2(col,row+1), 0, Vector2(0,0))
+					
+					
+				elif col-1 >= 0 and grid[row+1][col-1] == GRID_STATE.EMPTY:
+					#grid[row][col] = GRID_STATE.EMPTY
+					#grid[row+1][col-1] = GRID_STATE.SAND
+					next_frame_grid[row+1][col-1] = GRID_STATE.SAND
+					tiles.set_cell(0, Vector2(col-1,row+1), 0, Vector2(0,0))
+					
+					
+				elif col+1 <= grid[0].size()-1 and grid[row+1][col+1] == GRID_STATE.EMPTY:
+					#grid[row][col] = GRID_STATE.EMPTY
+					#grid[row+1][col+1] = GRID_STATE.SAND
+					next_frame_grid[row+1][col+1] = GRID_STATE.SAND
+					tiles.set_cell(0, Vector2(col+1,row+1), 0, Vector2(0,0))
+					
+				else:
+					next_frame_grid[row][col] = 1
+					tiles.set_cell(0, Vector2(col,row), 0, Vector2(0,0))
+	grid = next_frame_grid
+	#draw_tiles()
+	
+	
+func draw_tiles() -> void:
+	tiles.clear()
+	for row in range(grid.size()):
+		for col in range(grid[row].size()):
+			if grid[row][col] != GRID_STATE.EMPTY:
+				tiles.set_cell(0, Vector2(col,row), 0, Vector2(0,0))
+	
+
 func insert_tiles_into_world(square_size : int) -> void:
 	var mouse_position = get_global_mouse_position()
 	var grid_position = Vector2i(mouse_position) / tile_size
 	
+	#print(grid_position)
 	for y in range(square_size):
 		for x in range(square_size):
+			#print(Vector2(x,y))
 			particles.counter += 1
 			grid[grid_position.y + y][grid_position.x + x] = GRID_STATE.SAND
 
